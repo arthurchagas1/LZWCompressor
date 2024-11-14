@@ -5,168 +5,171 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from lzw import LZWCompressor, LZWDecompressor  # Ajuste o caminho conforme necessário
+import random
+import string
+from collections import Counter
+from math import log2
 
-# Inicializar variáveis de sessão
-if 'attempts' not in st.session_state:
-    st.session_state['attempts'] = []
-if 'compressed_data' not in st.session_state:
-    st.session_state['compressed_data'] = None
+# Função para gerar texto aleatório
+def generate_random_text(size):
+    caracteres = string.ascii_letters + string.digits + string.punctuation + ' '
+    return ''.join(random.choice(caracteres) for _ in range(size))
 
-st.title("Documentação Interativa do Algoritmo de Compressão LZW")
-st.markdown("""
-## Introdução
-Este site interativo apresenta a documentação do algoritmo Lempel-Ziv-Welch (LZW), explorando seu funcionamento, 
-etapas de compressão e descompressão, e exemplos de uso.
-""")
+# Função para calcular a entropia de um texto
+def calculate_entropy(text):
+    # Contagem de ocorrências de cada caractere
+    freq = Counter(text)
+    total_chars = len(text)
+    
+    # Cálculo da entropia de Shannon
+    entropy = 0
+    for count in freq.values():
+        probability = count / total_chars
+        entropy -= probability * log2(probability)
+    
+    return entropy
 
-st.markdown("### Parâmetros de Configuração")
-max_bits = st.slider("Número máximo de bits", min_value=9, max_value=16, value=12)
+# Página Relatório - Testes manuais e explicações
+def show_report():
+    st.title("Relatório de Comportamento do Algoritmo LZW")
+    st.markdown("""
+    ## Testes e Exemplos
+    Nesta seção, descrevo os testes realizados manualmente para observar o comportamento do algoritmo de compressão LZW.
+    
+    ### Teste 1: Compressão de Texto com Repetição
+    O algoritmo LZW é muito eficiente quando os dados de entrada contêm sequências repetitivas. Por exemplo, ao comprimir o texto:
+    `ABABABABABAABABABABABA`
+    o algoritmo identifica padrões e os codifica eficientemente. A expectativa é que o arquivo comprimido seja significativamente menor.
+    
+    ### Teste 2: Compressão de Texto Aleatório
+    Quando o texto é aleatório e não contém padrões, o algoritmo pode não ser tão eficiente, pois não há repetições a serem exploradas. Um exemplo seria a string gerada aleatoriamente:
+    `g7d!@#$%uY7*sdfse&*^%&&U`.
+    
+    ### Teste 3: Compressão de Texto com Diversidade
+    O comportamento do algoritmo também é interessante em textos como: 
+    `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`
+    Este tipo de entrada contém tanto repetições quanto diversidade, e o algoritmo deve equilibrar esses fatores para otimizar a compressão.
+    
+    ## Conclusões
+    Os testes realizados demonstram que o LZW é eficiente em lidar com dados repetitivos, mas pode não oferecer grandes vantagens em dados aleatórios. A análise da entropia do texto também foi uma ferramenta útil para entender o comportamento da compressão.
+    """)
 
-st.markdown("### Teste Interativo de Compressão e Descompressão")
-input_text = st.text_area("Digite o texto para compressão", "ABABABABAABABABABABA")
+# Página Interativa - Teste de Compressão e Descompressão
+def show_interactive_page():
+    st.title("Documentação Interativa do Algoritmo de Compressão LZW")
+    st.markdown("""
+    ## Introdução
+    Este site interativo apresenta a documentação do algoritmo Lempel-Ziv-Welch (LZW), explorando seu funcionamento, 
+    etapas de compressão e descompressão, e exemplos de uso.
+    """)
 
-# Inicialize o compressor e o decompressor antes dos botões
-compressor = LZWCompressor(max_bits=max_bits)
-decompressor = LZWDecompressor(max_bits=max_bits)
+    # Inicializar variáveis de sessão
+    if 'attempts' not in st.session_state:
+        st.session_state['attempts'] = []
+    if 'compressed_data' not in st.session_state:
+        st.session_state['compressed_data'] = None
+    if 'generated_text' not in st.session_state:
+        st.session_state['generated_text'] = ""
 
-# Botão de compressão
-if st.button("Comprimir"):
-    start_time = time.time()
-    compressed_data = compressor.compress(input_text)
-    end_time = time.time()
-    
-    # Calcular métricas
-    input_size = len(input_text)
-    compressed_size = len(compressed_data)
-    compression_ratio = compressed_size / input_size if input_size > 0 else 0
-    execution_time = end_time - start_time
-    
-    # Exibir resultados
-    st.write("**Dados Comprimidos:**", compressed_data)
-    st.write(f"**Taxa de Compressão:** {compression_ratio:.2f}")
-    st.write(f"**Tempo de Execução:** {execution_time:.4f} segundos")
-    
-    # Armazenar dados na sessão
-    st.session_state['attempts'].append({
-        'operation': 'Compressão',
-        'input_size': input_size,
-        'output_size': compressed_size,
-        'compression_ratio': compression_ratio,
-        'execution_time': execution_time
-    })
-    
-    # Salva o texto comprimido na sessão para permitir descompressão
-    st.session_state['compressed_data'] = compressed_data
+    # Parâmetros de Configuração
+    st.markdown("### Parâmetros de Configuração")
+    max_bits = st.slider("Número máximo de bits", min_value=9, max_value=16, value=12)
 
-# Botão de descompressão
-if st.button("Descomprimir") and st.session_state['compressed_data'] is not None:
-    start_time = time.time()
-    decompressed_data = decompressor.decompress(st.session_state['compressed_data'])
-    end_time = time.time()
-    
-    execution_time = end_time - start_time
-    output_size = len(decompressed_data)
-    input_size = len(st.session_state['compressed_data'])
-    
-    st.write("**Texto Descomprimido:**", decompressed_data)
-    st.write(f"**Tamanho do Texto Descomprimido:** {output_size}")
-    st.write(f"**Tempo de Execução:** {execution_time:.4f} segundos")
-    
-    # Armazenar dados na sessão
-    st.session_state['attempts'].append({
-        'operation': 'Descompressão',
-        'input_size': input_size,
-        'output_size': output_size,
-        'execution_time': execution_time
-    })
-
-st.markdown("### Histórico de Tentativas e Estatísticas")
-
-if st.session_state['attempts']:
-    # Converter a lista de tentativas em um DataFrame
-    df = pd.DataFrame(st.session_state['attempts'])
-    
-    # Exibir tabela com todas as tentativas
-    st.write("#### Tabela de Tentativas")
-    st.write(df)
-    
-    # Função para plotar gráficos personalizados com regressão linear e cor dos pontos
-    def plot_with_regression(x, y, color, x_label, y_label, title):
-        plt.figure(figsize=(10, 5))
+    st.markdown("### Gerador de Texto Aleatório")
+    text_size = st.slider("Tamanho do Texto Aleatório", min_value=100, max_value=5000, value=1000)
+    if st.button("Gerar Texto Aleatório"):
+        # Gerar o texto aleatório com o tamanho especificado
+        generated_text = generate_random_text(text_size)
+        st.session_state['generated_text'] = generated_text
+        st.text_area("Texto Gerado", generated_text, height=200)
         
-        # Scatter plot com cor representando o tamanho da entrada
-        scatter = plt.scatter(x, y, c=color, cmap="viridis", alpha=0.6, edgecolors="w", s=50, label=y_label)
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.title(title)
-        plt.colorbar(scatter, label="Tamanho da Entrada")
-        
-        # Ajuste da regressão linear
-        x = np.array(x).reshape(-1, 1)
-        y = np.array(y)
-        model = LinearRegression()
-        model.fit(x, y)
-        y_pred = model.predict(x)
-        
-        plt.plot(x, y_pred, color="red", linewidth=2, label="Regressão Linear")  # Linha de regressão em vermelho
-        plt.legend()
-        st.pyplot(plt)
+        # Calcular a entropia do texto gerado
+        entropy_value = calculate_entropy(generated_text)
+        st.write(f"**Entropia do Texto Gerado:** {entropy_value:.4f} bits")
 
-    # Análise 1: Taxa de Compressão vs. Tamanho de Entrada
-    st.write("#### Análise: Taxa de Compressão vs. Tamanho de Entrada")
-    plot_with_regression(
-        x=df['input_size'],
-        y=df['compression_ratio'],
-        color=df['input_size'],
-        x_label="Tamanho da Entrada",
-        y_label="Taxa de Compressão",
-        title="Taxa de Compressão vs. Tamanho de Entrada"
-    )
+    st.markdown("### Teste Interativo de Compressão e Descompressão")
+    input_text = st.text_area("Digite o texto para compressão", st.session_state['generated_text'] if st.session_state['generated_text'] else "ABABABABAABABABABABA")
 
-    # Análise 2: Tempo de Execução vs. Tamanho de Entrada
-    st.write("#### Análise: Tempo de Execução vs. Tamanho de Entrada")
-    plot_with_regression(
-        x=df['input_size'],
-        y=df['execution_time'],
-        color=df['input_size'],
-        x_label="Tamanho da Entrada",
-        y_label="Tempo de Execução (s)",
-        title="Tempo de Execução vs. Tamanho de Entrada"
-    )
-    
-    # Análise 3: Comparação entre Compressão e Descompressão
-    df_compress = df[df['operation'] == 'Compressão']
-    df_decompress = df[df['operation'] == 'Descompressão']
-    if not df_compress.empty and not df_decompress.empty:
-        st.write("#### Comparação: Tempo de Execução entre Compressão e Descompressão")
+    # Inicialize o compressor e o decompressor antes dos botões
+    compressor = LZWCompressor(max_bits=max_bits)
+    decompressor = LZWDecompressor(max_bits=max_bits)
+
+    # Botão de compressão
+    if st.button("Comprimir"):
+        start_time = time.time()
+        compressed_data = compressor.compress(input_text)
+        end_time = time.time()
         
-        plt.figure(figsize=(10, 5))
-        plt.scatter(df_compress['input_size'], df_compress['execution_time'], color="blue", label="Compressão")
-        plt.scatter(df_decompress['input_size'], df_decompress['execution_time'], color="green", label="Descompressão")
-        plt.xlabel("Tamanho da Entrada")
-        plt.ylabel("Tempo de Execução (s)")
-        plt.title("Comparação do Tempo de Execução entre Compressão e Descompressão")
-        plt.legend()
-        st.pyplot(plt)
-    
-    # Análise 4: Evolução da Taxa de Compressão por Tentativa
-    st.write("#### Análise: Evolução da Taxa de Compressão ao Longo das Tentativas")
-    plot_with_regression(
-        x=df.index + 1,
-        y=df['compression_ratio'],
-        color=df['input_size'],
-        x_label="Tentativa",
-        y_label="Taxa de Compressão",
-        title="Evolução da Taxa de Compressão"
-    )
+        # Calcular métricas
+        input_size = len(input_text)
+        compressed_size = len(compressed_data)
+        compression_ratio = compressed_size / input_size if input_size > 0 else 0
+        execution_time = end_time - start_time
+        
+        # Calcular a entropia do texto comprimido
+        entropy_value = calculate_entropy(input_text)
+        
+        # Exibir resultados
+        st.write("**Dados Comprimidos:**", compressed_data)
+        st.write(f"**Taxa de Compressão:** {compression_ratio:.2f}")
+        st.write(f"**Tempo de Execução:** {execution_time:.4f} segundos")
+        st.write(f"**Entropia do Texto:** {entropy_value:.4f} bits")
+        
+        # Armazenar dados na sessão
+        st.session_state['attempts'].append({
+            'operation': 'Compressão',
+            'input_size': input_size,
+            'output_size': compressed_size,
+            'compression_ratio': compression_ratio,
+            'execution_time': execution_time,
+            'entropy': entropy_value
+        })
+        
+        # Salva o texto comprimido na sessão para permitir descompressão
+        st.session_state['compressed_data'] = compressed_data
 
-    # Cálculo das médias e exibição
-    avg_compression_ratio = df_compress['compression_ratio'].mean()
-    avg_execution_time_compress = df_compress['execution_time'].mean()
-    avg_execution_time_decompress = df_decompress['execution_time'].mean() if not df_decompress.empty else None
-    
-    st.write("### Médias das Análises")
-    st.write(f"**Taxa de Compressão Média (Compressão):** {avg_compression_ratio:.2f}")
-    st.write(f"**Tempo de Execução Médio (Compressão):** {avg_execution_time_compress:.4f} segundos")
-    if avg_execution_time_decompress:
-        st.write(f"**Tempo de Execução Médio (Descompressão):** {avg_execution_time_decompress:.4f} segundos")
+    # Botão de descompressão
+    if st.button("Descomprimir") and st.session_state['compressed_data'] is not None:
+        start_time = time.time()
+        decompressed_data = decompressor.decompress(st.session_state['compressed_data'])
+        end_time = time.time()
+        
+        execution_time = end_time - start_time
+        output_size = len(decompressed_data)
+        input_size = len(st.session_state['compressed_data'])
+        
+        # Calcular a entropia do texto descomprimido
+        entropy_value = calculate_entropy(decompressed_data)
+        
+        st.write("**Texto Descomprimido:**", decompressed_data)
+        st.write(f"**Tamanho do Texto Descomprimido:** {output_size}")
+        st.write(f"**Tempo de Execução:** {execution_time:.4f} segundos")
+        st.write(f"**Entropia do Texto Descomprimido:** {entropy_value:.4f} bits")
+        
+        # Armazenar dados na sessão
+        st.session_state['attempts'].append({
+            'operation': 'Descompressão',
+            'input_size': input_size,
+            'output_size': output_size,
+            'execution_time': execution_time,
+            'entropy': entropy_value
+        })
+
+    st.markdown("### Histórico de Tentativas e Estatísticas")
+
+    if st.session_state['attempts']:
+        # Converter a lista de tentativas em um DataFrame
+        df = pd.DataFrame(st.session_state['attempts'])
+        
+        # Exibir tabela com todas as tentativas
+        st.write("#### Tabela de Tentativas")
+        st.write(df)
+
+# Configuração do menu lateral para navegação
+page = st.sidebar.radio("Escolha uma página", ("Relatório", "Teste Interativo"))
+
+if page == "Relatório":
+    show_report()
+else:
+    show_interactive_page()
+
