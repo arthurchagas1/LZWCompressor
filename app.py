@@ -28,9 +28,9 @@ def calculate_entropy(text):
         entropy -= probability * log2(probability)
     return entropy
 
-# Página Relatório - Testes e Gráficos
+# Página Relatório - Testes e Gráficos (LZW Padrão)
 def show_report():
-    st.title("Relatório de Comportamento do Algoritmo LZW")
+    st.title("Relatório de Comportamento do Algoritmo LZW (Padrão)")
     st.markdown("""
     ## Testes e Gráficos
     Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW.
@@ -87,6 +87,75 @@ def show_report():
         ax.grid(True)
         st.pyplot(fig)
 
+        # Gráfico Interativo (Streamlit Native)
+        st.write("### Gráfico Interativo: Input Size vs. Compression Rate")
+        st.line_chart(data[["Input Size", "Compression Rate"]])
+        
+        # Estatísticas Descritivas
+        st.write("### Estatísticas Descritivas dos Dados")
+        st.write(data.describe())
+        
+    except FileNotFoundError:
+        st.error(f"O arquivo '{csv_file}' não foi encontrado no diretório do aplicativo.")
+
+# Página Relatório - Testes e Gráficos (LZW Dinâmico)
+def show_dynamic_report():
+    st.title("Relatório de Comportamento do Algoritmo LZW (Dinâmico)")
+    st.markdown("""
+    ## Testes e Gráficos
+    Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW Dinâmico.
+    """)
+
+    # Carrega os dados do CSV automaticamente
+    csv_file = "lzw_dynamic_analysis.csv"  # Nome do arquivo dinâmico no diretório
+    try:
+        data = load_data(csv_file)
+        
+        # Exibe o DataFrame
+        st.write("### Dados do CSV")
+        st.write(data)
+        
+        # Gráfico 1: Tamanho Original x Taxa de Compressão
+        st.write("### Tamanho Original vs. Taxa de Compressão")
+        fig, ax = plt.subplots()
+        ax.plot(data["Input Size"], label="Tamanho Original", marker="o", linestyle="--")
+        ax.plot(data["Compression Rate"], label="Taxa de Compressão", marker="x")
+        ax.set_xlabel("Casos")
+        ax.set_ylabel("Tamanho / Taxa")
+        ax.set_title("Comparação de Tamanho e Taxa de Compressão")
+        ax.legend()
+        st.pyplot(fig)
+        
+        # Gráfico 2: Tempo de Compressão
+        st.write("### Tempo de Compressão por Caso")
+        fig, ax = plt.subplots()
+        ax.plot(data["Compression Time (s)"], label="Tempo de Compressão (s)", color="green", marker="o")
+        ax.set_xlabel("Casos")
+        ax.set_ylabel("Tempo (s)")
+        ax.set_title("Tempo de Compressão por Caso")
+        st.pyplot(fig)
+        
+        # Gráfico 3: Entropia
+        st.write("### Entropia por Nível de Entrada")
+        fig, ax = plt.subplots()
+        ax.scatter(data["Entropy Level"], data["Entropy"], label="Entropia", color="blue")
+        ax.set_xlabel("Nível de Entropia")
+        ax.set_ylabel("Entropia")
+        ax.set_title("Entropia por Nível de Entrada")
+        st.pyplot(fig)
+
+        # Calcular a eficiência da compressão em porcentagens
+        data["Compression Efficiency (%)"] = (1 - data["Compression Rate"]) * 100
+
+        # Gráfico: Entropia x Eficiência de Compressão (%)
+        st.write("### Relação entre Entropia e Eficiência de Compressão (%)")
+        fig, ax = plt.subplots()
+        ax.scatter(data["Entropy"], data["Compression Efficiency (%)"], c='blue', alpha=0.7, edgecolors='w', s=80)
+        ax.set_xlabel("Entropia")
+        ax.set_ylabel("Eficiência de Compressão (%)")
+        ax.set_title("Relação entre Entropia e Eficiência de Compressão (%)")
+        ax.grid(True)
+        st.pyplot(fig)
 
         # Gráfico Interativo (Streamlit Native)
         st.write("### Gráfico Interativo: Input Size vs. Compression Rate")
@@ -211,10 +280,12 @@ def show_interactive_page():
         st.write(df)
 
 # Configuração do menu lateral para navegação
-page = st.sidebar.radio("Escolha uma página", ("Relatório", "Teste Interativo"))
+page = st.sidebar.radio("Escolha uma página", ("Relatório LZW Padrão", "Relatório LZW Dinâmico", "Teste Interativo"))
 
-if page == "Relatório":
+if page == "Relatório LZW Padrão":
     show_report()
+elif page == "Relatório LZW Dinâmico":
+    show_dynamic_report()
 else:
     show_interactive_page()
 
