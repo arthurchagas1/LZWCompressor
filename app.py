@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-from lzw import LZWCompressor, LZWDecompressor  # Ajuste o caminho conforme necessário
+from lzw import LZWCompressor, LZWDecompressor 
 import random
 import string
 from collections import Counter
