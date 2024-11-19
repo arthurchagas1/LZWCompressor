@@ -1,14 +1,17 @@
 import streamlit as st
-import time
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from lzw import LZWCompressor, LZWDecompressor 
-import random
-import string
 from collections import Counter
 from math import log2
+from lzw import LZWCompressor, LZWDecompressor
+import random
+import string
+import time
+
+# Função para carregar os dados do CSV automaticamente
+@st.cache
+def load_data(csv_file):
+    return pd.read_csv(csv_file)
 
 # Função para gerar texto aleatório
 def generate_random_text(size):
@@ -17,42 +20,84 @@ def generate_random_text(size):
 
 # Função para calcular a entropia de um texto
 def calculate_entropy(text):
-    # Contagem de ocorrências de cada caractere
     freq = Counter(text)
     total_chars = len(text)
-    
-    # Cálculo da entropia de Shannon
     entropy = 0
     for count in freq.values():
         probability = count / total_chars
         entropy -= probability * log2(probability)
-    
     return entropy
 
-# Página Relatório - Testes manuais e explicações
+# Página Relatório - Testes e Gráficos
 def show_report():
     st.title("Relatório de Comportamento do Algoritmo LZW")
     st.markdown("""
-    ## Testes e Exemplos
-    Nesta seção, descrevo os testes realizados manualmente para observar o comportamento do algoritmo de compressão LZW.
-    
-    ### Teste 1: Compressão de Texto com Repetição
-    O algoritmo LZW é muito eficiente quando os dados de entrada contêm sequências repetitivas. Por exemplo, ao comprimir o texto:
-    `ABABABABABAABABABABABA`
-    o algoritmo identifica padrões e os codifica eficientemente. A expectativa é que o arquivo comprimido seja significativamente menor.
-    
-    ### Teste 2: Compressão de Texto Aleatório
-    Quando o texto é aleatório e não contém padrões, o algoritmo pode não ser tão eficiente, pois não há repetições a serem exploradas. Um exemplo seria a string gerada aleatoriamente:
-    `g7d!@#$%uY7*sdfse&*^%&&U`.
-    
-    ### Teste 3: Compressão de Texto com Diversidade
-    O comportamento do algoritmo também é interessante em textos como: 
-    `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`
-    Este tipo de entrada contém tanto repetições quanto diversidade, e o algoritmo deve equilibrar esses fatores para otimizar a compressão.
-    
-    ## Conclusões
-    Os testes realizados demonstram que o LZW é eficiente em lidar com dados repetitivos, mas pode não oferecer grandes vantagens em dados aleatórios. A análise da entropia do texto também foi uma ferramenta útil para entender o comportamento da compressão.
+    ## Testes e Gráficos
+    Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW.
     """)
+
+    # Carrega os dados do CSV automaticamente
+    csv_file = "lzw_analysis.csv"  # Nome do arquivo no diretório
+    try:
+        data = load_data(csv_file)
+        
+        # Exibe o DataFrame
+        st.write("### Dados do CSV")
+        st.write(data)
+        
+        # Gráfico 1: Tamanho Original x Taxa de Compressão
+        st.write("### Tamanho Original vs. Taxa de Compressão")
+        fig, ax = plt.subplots()
+        ax.plot(data["Input Size"], label="Tamanho Original", marker="o", linestyle="--")
+        ax.plot(data["Compression Rate"], label="Taxa de Compressão", marker="x")
+        ax.set_xlabel("Casos")
+        ax.set_ylabel("Tamanho / Taxa")
+        ax.set_title("Comparação de Tamanho e Taxa de Compressão")
+        ax.legend()
+        st.pyplot(fig)
+        
+        # Gráfico 2: Tempo de Compressão
+        st.write("### Tempo de Compressão por Caso")
+        fig, ax = plt.subplots()
+        ax.plot(data["Compression Time (s)"], label="Tempo de Compressão (s)", color="green", marker="o")
+        ax.set_xlabel("Casos")
+        ax.set_ylabel("Tempo (s)")
+        ax.set_title("Tempo de Compressão por Caso")
+        st.pyplot(fig)
+        
+        # Gráfico 3: Entropia
+        st.write("### Entropia por Nível de Entrada")
+        fig, ax = plt.subplots()
+        ax.scatter(data["Entropy Level"], data["Entropy"], label="Entropia", color="blue")
+        ax.set_xlabel("Nível de Entropia")
+        ax.set_ylabel("Entropia")
+        ax.set_title("Entropia por Nível de Entrada")
+        st.pyplot(fig)
+
+        # Calcular a eficiência da compressão em porcentagens
+        data["Compression Efficiency (%)"] = (1 - data["Compression Rate"]) * 100
+
+        # Gráfico: Entropia x Eficiência de Compressão (%)
+        st.write("### Relação entre Entropia e Eficiência de Compressão (%)")
+        fig, ax = plt.subplots()
+        ax.scatter(data["Entropy"], data["Compression Efficiency (%)"], c='green', alpha=0.7, edgecolors='w', s=80)
+        ax.set_xlabel("Entropia")
+        ax.set_ylabel("Eficiência de Compressão (%)")
+        ax.set_title("Relação entre Entropia e Eficiência de Compressão (%)")
+        ax.grid(True)
+        st.pyplot(fig)
+
+
+        # Gráfico Interativo (Streamlit Native)
+        st.write("### Gráfico Interativo: Input Size vs. Compression Rate")
+        st.line_chart(data[["Input Size", "Compression Rate"]])
+        
+        # Estatísticas Descritivas
+        st.write("### Estatísticas Descritivas dos Dados")
+        st.write(data.describe())
+        
+    except FileNotFoundError:
+        st.error(f"O arquivo '{csv_file}' não foi encontrado no diretório do aplicativo.")
 
 # Página Interativa - Teste de Compressão e Descompressão
 def show_interactive_page():
