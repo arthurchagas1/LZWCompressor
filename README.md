@@ -6,6 +6,39 @@
 
 # English
 
+## Description
+
+This project implements the LZW compression algorithm with support for dynamic code size and a case generator for analyzing performance, entropy, and compression efficiency.
+
+The project consists of:
+
+• Implementation of LZW with dynamic code size.  
+• String generators with different entropy levels for analysis.  
+• Tools to measure compression time, compression rate, and entropy.  
+• Results automatically saved in CSV files for further analysis.
+
+## Remote Usage (Website)
+
+• Access [This Link](insert link)
+
+## Local Installation
+
+• Clone the repository:  
+git clone https://github.com/arthurchagas1/LZWCompressor/
+
+• Install the requirements, if necessary:  
+pip install requirement
+
+## Local Usage
+
+• Run the file:  
+python (lzw.py or dynamic.py) (compress or decompress) (input file) (output file) (max_bits *optional)
+
+• To use the automatic test generator, execute:  
+python (cases.py or cases_dynamic.py)  
+The test results will be saved in a CSV file in the program's directory.
+
+
 # Português
 
 ## Descrição
