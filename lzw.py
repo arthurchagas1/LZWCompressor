@@ -45,7 +45,12 @@ class LZWCompressor:
             if self.trie.search(combined_string) is not None:
                 current_string = combined_string
             else:
-                result.append(self.trie.search(current_string))
+                # Verificação adicionada
+                code = self.trie.search(current_string)
+                if code is None:
+                    raise ValueError(f"Erro: Sequência inválida encontrada: {current_string}")
+                
+                result.append(code)
                 if self.trie.next_code <= self.max_code:
                     self.trie.insert(combined_string, self.trie.next_code)
                     self.trie.next_code += 1
@@ -53,7 +58,10 @@ class LZWCompressor:
 
         # Append last code
         if current_string:
-            result.append(self.trie.search(current_string))
+            code = self.trie.search(current_string)
+            if code is None:
+                raise ValueError(f"Erro: Sequência inválida encontrada no final: {current_string}")
+            result.append(code)
         return result
 
 class LZWDecompressor:
@@ -110,8 +118,8 @@ def main():
 
     if args.operation == "compress":
         # Leitura do arquivo de entrada para compressão
-        with open(args.input_file, 'r', encoding="utf-8") as f:
-            input_data = f.read()
+        with open(args.input_file, 'rb') as f:
+            input_data = f.read().decode('latin1')  # Suporte para dados binários
 
         compressor = LZWCompressor(max_bits=args.max_bits)
         compressed_data = compressor.compress(input_data)
@@ -126,11 +134,10 @@ def main():
         decompressed_data = decompressor.decompress(compressed_data)
         
         # Salva o conteúdo descomprimido no arquivo de saída
-        with open(args.output_file, 'w', encoding="utf-8") as f:
+        with open(args.output_file, 'w', encoding="latin1") as f:
             f.write(decompressed_data)
         print(f"Arquivo descomprimido salvo em: {args.output_file}")
 
 if __name__ == "__main__":
     main()
-
 
