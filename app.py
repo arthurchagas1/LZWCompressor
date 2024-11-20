@@ -35,7 +35,7 @@ def show_introduction():
     ### Arthur Rodrigues Chagas - 2022069417
     ### Lucas Dayrell de Andrade Machado - 2020035329
 
-    #Introdução
+    # Introdução
     O Trabalho Prático 1 de Algoritmos II visa colocar em prática os conhecimentos trabalhados em sala, especialmente se referindo a uma aplicação da árovre Trie. A tarefa a ser realizada é a compressão e descompressão de arquivos utilizando o algoritmo Lempel-Ziv-Welch (LZW), que utiliza essa estrutura. Nas seções ao lado, discutiremos as implementações e alguns experimentos realizados, a fim de analisar a utilidade e aplicabilidade do algoritmo em questão.      
     """)
 
@@ -43,46 +43,46 @@ def show_introduction():
 def show_implementations():
     st.title("Implementações")
     st.markdown("""
-    ##Trie
+    ## Trie
         Para representar a árvore trie, foram criadas duas classes: uma correspondente ao nó e a outra à estrutura da árvore.
-        ###Classe TrieNode
+        ### Classe TrieNode
             O objetivo dessa classe é representar o nó de uma Trie direcionado para o objetivo de compressão de arquivos. Cada nó possui dois atributos:
             - `children` : um dicionário que mapeia caracteres para seus respectivos nós filhos
             - `code`: um campo que armazena o código associado a uma sequência de caracteres
-        ###Classe Trie
+        ### Classe Trie
             Essa classe implementa a estrutura da Trie compacta. Seus atributos são: 
             - `root`: o nó raiz da árvore
             - `next_code`: o próximo código disponível para ser atribuído a uma nova sequência de caracteres.
-        ###Métodos
+        ### Métodos
             -`insert(self, string, code)`: insere uma sequência de caracteres (string) na trie e associa a sequência com um código (code). Se nós correspondentes não existirem, eles são criados.
             -`search(self, string)`: Pesquisa se uma sequência de caracteres está inserida na árvore. Se sim, retorna o código associado. Caso contrário, retorna None.
             Ambos os métodos possuem complexidade $O(m)$, onde $m$ é o comprimento da sequência de caracteres. Isso ocorre porque, em cada operação, o código percorre cada caractere da sequência por vez.
-    ##LZW Padrão
+    ## LZW Padrão
         O compressor LZW é o componente responsável por comprimir dados da entrada utilizando a trie
-        ###Classe LZWCompressor
+        ### Classe LZWCompressor
             -`__init__(self, max_bits=12)` (construtor): inicializa uma instância de compressor, configurando o número máximo de bits para o código, criando uma trie e inserindo os caracteres ASCII nela com seus respectivos códigos.
             -`compress(self, input_data)`: Realiza a compressão do texto fornecido. Para cada caractere da entrada: (1): Tenta combiná-lo com o restante da sequência já processada; (2):Se a sequência combinada já estiver na trie, o caractere é adicionado à sequência atual. (3): Caso contrário, o código da sequência existente é armazenado no resultado, e a sequência combinada é adicionada à trie com um novo código; (4): No final, o último código da sequência é adicionado ao resultado.
             A compressão possui complexidade $O(m * n)$, onde $n$ é o número de caracteres da entrada e $m$ é o comprimento da sequência inserida ou pesquisada na trie. Esse comportamento assintótico decorre da necessidade de verificar ou inserir sequências na trie, que é uma operação de tempo linear com relação ao comprimento da sequência.          
-        ###Classe LZWDecompressor
+        ### Classe LZWDecompressor
             -`__init__(self, max_bits=12)` (construtor): inicializa o descompressor, criando um dicionário com os primeiros 256 códigos ASCII.
             -`decompress(self, compressed_data)`: Descomprime os dados. Para cada código: (1): Recupera a sequência correspondente ao código; (2):Se o código é o próximo disponível, a sequência é formada pelo último caractere da sequência anterior repetido; (3):Insere novas sequências no dicionário à medida que o processo avança.
             A descompressão possui a mesma complexidade assintótica da compressão, pois envolve a reconstrução das sequências a partir de código e as constantes inserções de novos pares no dicionário.
-    ##Métodos de leitura e escrita de arquivos
+    ## Métodos de leitura e escrita de arquivos
             -`write_compressed_file(output_path, compressed_data)`: Grava os códigos comprimidos em um arquivo binário, usando 2 bytes por código.
             -`read_compressed_file(input_path)`: Lê os códigos comprimidos de um arquivo binário e os retorna como uma lista de inteiros.
             Ambos possuem complexidade $O(n)$, com $n$ sendo o número de códigos, evidentemente. Isso se deve ao fato dos métodos iterarem sobre os códigos.
                 
-    ##LZW Dinâmico
-        ###Classe LZWCompressorDynamic
+    ## LZW Dinâmico
+        ### Classe LZWCompressorDynamic
         - `__init__(self, max_bits=12)` (construtor): Inicializa o compressor. O número máximo de bits (max_bits) é configurado para o tamanho máximo de código permitido. O compressor começa com códigos de 9 bits (até 511 códigos possíveis), e a tabela de prefixos é preenchida com os códigos ASCII (0-255). O próximo código disponível (next_code) começa em 256, já que os códigos ASCII são usados inicialmente.
         - `compress(self, input_data)`: Realiza a compressão do texto de entrada, com os seguintes passos:(1)Percorre os caracteres da entrada e tenta expandir a sequência (current_string) com o próximo caractere (char).(2)Se a sequência já existe no dicionário, continua a expandir a sequência.(3)Caso contrário, armazena o código da sequência atual no resultado e insere a nova sequência no dicionário.(4)Se o dicionário atinge o limite de códigos (determinado pelo número de bits), o número de bits usados para os códigos é aumentado, ajustando a variável current_bits. (5)Ao final, o código adiciona o código da última sequência ao resultado.
-        ###Classe LZWDecompressorDynamic
+        ### Classe LZWDecompressorDynamic
         - `__init__(self, max_bits=12)` (construtor): Inicializa o compressor. Os parâmetros e fucnionamento da inicialização são análogos ao do compressor.
         -`decompress(self, input_data)`: Descomprime a entrada da seguinte forma: (1)Recupera a sequência correspondente ao primeiro código da entrada; (2)Para cada código subsequente: Se o código estiver no dicionário, recupera a sequência correspondente; Se o código for igual ao próximo código esperado, a sequência é formada pelo caractere repetido da sequência anterior; Caso contrário, lança um erro; (3)Insere as novas sequências no dicionário à medida que são processadas; (4)Se o número de códigos exceder o limite, o número de bits usados para os códigos é incrementado; (5)O resultado final é reconstruído e retornado como uma string;
         
-        ###Funções de leitura e escrita: 
+        ### Funções de leitura e escrita: 
         São análogas às anteriores. `write_compressed_file(output_path, compressed_data, max_bits)` Grava os dados comprimidos em um arquivo binário, salvando também o número de bits usado para os códigos. `read_compressed_file(input_path)` faz o mesmo do anterior, levando em conta o número de bits utilizados.
-    ##Considerações
+    ## Considerações
         Podemos afirmar que a implementação dinâmica tem a vantagem de ajustar automaticamente o número de bits conforme necessário (até um máximo), enquanto a implementação estática usa um número fixo de bits para representar os códigos. Isso torna o algoritmo dinâmico mais flexível, especialmente lidando com dados de tamanho variado. Cabe frisar, no entanto, que essa implementação pode ser mais lenta dependendo do caso pela presença do custo de atualizar o número de bits e verificar a necessidade de ajustar.
     """)
 
@@ -91,39 +91,30 @@ def show_report():
     st.title("Relatório de Comportamento do Algoritmo LZW (Padrão)")
     st.markdown("""
     ## Testes e Gráficos
-    Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW.
+    Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW. Antes de prosseguir, é importante destacar que vamos introduzir uma métrica para avaliar mais precisamente as entradas: a entropia da informação (ou de Shannon), conceito amplamente usado na teoria da informação e que pode revelar detalhes mais interessantes sobre a entrada. A fórmula da entropia de Shannon é dada por:
+
+    $$
+    H(X) = - \sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
+    $$
+
+    Onde:
+    - \( H(X) \): Entropia da variável aleatória \( X \).
+    - \( p(x_i) \): Probabilidade do evento \( x_i \).
+    No nosso caso, a variável aleatória \( X \) é o texto de entrada e a probabilidade do evento \( x_i \) é associada à probabilidade do caractere no texto, isto é, a chance de encontrá-lo ao escolher um caractere aleatório. Nesse contexto, essa métrica ajuda a medir o quão caótica é a entrada, fator fundamental em um método de compressão que busca padrões.
     """)
 
     # Carrega os dados do CSV automaticamente
     csv_file = "lzw_analysis.csv"  # Nome do arquivo no diretório
     try:
         data = load_data(csv_file)
-        
+
+        st.markdown("""As estatísticas para os testes foram salvas em um arquivo CSV. A estrutura do arquivo pode ser vista abaixo""")
         # Exibe o DataFrame
         st.write("### Dados do CSV")
         st.write(data)
+
         
-        # Gráfico 1: Tamanho Original x Taxa de Compressão
-        st.write("### Tamanho Original vs. Taxa de Compressão")
-        fig, ax = plt.subplots()
-        ax.plot(data["Input Size"], label="Tamanho Original", marker="o", linestyle="--")
-        ax.plot(data["Compression Rate"], label="Taxa de Compressão", marker="x")
-        ax.set_xlabel("Casos")
-        ax.set_ylabel("Tamanho / Taxa")
-        ax.set_title("Comparação de Tamanho e Taxa de Compressão")
-        ax.legend()
-        st.pyplot(fig)
-        
-        # Gráfico 2: Tempo de Compressão
-        st.write("### Tempo de Compressão por Caso")
-        fig, ax = plt.subplots()
-        ax.plot(data["Compression Time (s)"], label="Tempo de Compressão (s)", color="green", marker="o")
-        ax.set_xlabel("Casos")
-        ax.set_ylabel("Tempo (s)")
-        ax.set_title("Tempo de Compressão por Caso")
-        st.pyplot(fig)
-        
-        # Gráfico 3: Entropia
+        # Gráfico 1: Entropia por Nível de Entrada
         st.write("### Entropia por Nível de Entrada")
         fig, ax = plt.subplots()
         ax.scatter(data["Entropy Level"], data["Entropy"], label="Entropia", color="blue")
@@ -131,11 +122,10 @@ def show_report():
         ax.set_ylabel("Entropia")
         ax.set_title("Entropia por Nível de Entrada")
         st.pyplot(fig)
+        st.markdown(""" Neste gráfico, podemos observar como se comportaram os níveis de entropia que configuramos para os geradores de casos de teste. Tendo em vista que o nível 9 abarca textos completamente aleatórios, conseguimos capturar bem vários níveis.""")
 
-        # Calcular a eficiência da compressão em porcentagens
+        # Gráfico 2: Relação entre Entropia e Eficiência de Compressão (%)
         data["Compression Efficiency (%)"] = (1 - data["Compression Rate"]) * 100
-
-        # Gráfico: Entropia x Eficiência de Compressão (%)
         st.write("### Relação entre Entropia e Eficiência de Compressão (%)")
         fig, ax = plt.subplots()
         ax.scatter(data["Entropy"], data["Compression Efficiency (%)"], c='green', alpha=0.7, edgecolors='w', s=80)
@@ -144,56 +134,65 @@ def show_report():
         ax.set_title("Relação entre Entropia e Eficiência de Compressão (%)")
         ax.grid(True)
         st.pyplot(fig)
+        st.markdown(""" Incrivelmente, conseguimos observar uma relação quasi-linear(para não dizer linear) entre entropia e eficiência da compressão. Para textos completamente aleatórios e sem nenhum padrão, o tiro do compressor sai pela culatra: Cada caractere é armazenado na trie, que ainda cria o dicionário, fazendo com que o arquivo aumente de tamanho. Esse caso estoura a complexidade de espaço do algoritmo máxima, isto é, entrada+dicionário. Para textos "comuns" ou textos com muitos padrões, a compressão se mostrou extremamente eficiente.""")
 
-        # Gráfico Interativo (Streamlit Native)
+        # Gráfico 3: Tamanho do Dicionário pela Entropia
+        st.write("### Tamanho do Dicionário pela Entropia")
+        fig, ax = plt.subplots()
+        ax.plot(data["Entropy"], data["Dictionary Size"], label="Tamanho do Dicionário", marker="o", linestyle="-")
+        ax.set_xlabel("Entropia")
+        ax.set_ylabel("Tamanho do Dicionário")
+        ax.set_title("Tamanho do Dicionário em Função da Entropia")
+        ax.legend()
+        st.pyplot(fig)
+
+        # Gráfico 4: Taxa de Compressão por Tamanho para cada Nível de Entropia
+        st.write("### Taxa de Compressão por Tamanho para cada Nível de Entropia")
+        entropy_levels = data["Entropy Level"].unique()
+        selected_level = st.selectbox("Selecione o Nível de Entropia", entropy_levels)
+        filtered_data = data[data["Entropy Level"] == selected_level]
+
+        if not filtered_data.empty:
+            fig, ax = plt.subplots()
+            ax.plot(filtered_data["Input Size"], filtered_data["Compression Rate"], marker="x", linestyle="--")
+            ax.set_xlabel("Tamanho da Entrada")
+            ax.set_ylabel("Taxa de Compressão")
+            ax.set_title(f"Taxa de Compressão por Tamanho para Nível de Entropia {selected_level}")
+            st.pyplot(fig)
+        else:
+            st.warning("Nenhum dado disponível para o nível de entropia selecionado.")
+
+        # Gráfico Interativo
         st.write("### Gráfico Interativo: Input Size vs. Compression Rate")
         st.line_chart(data[["Input Size", "Compression Rate"]])
-        
+
         # Estatísticas Descritivas
         st.write("### Estatísticas Descritivas dos Dados")
         st.write(data.describe())
-        
+
     except FileNotFoundError:
         st.error(f"O arquivo '{csv_file}' não foi encontrado no diretório do aplicativo.")
+
 
 # Página Relatório - Testes e Gráficos (LZW Dinâmico)
 def show_dynamic_report():
     st.title("Relatório de Comportamento do Algoritmo LZW (Dinâmico)")
     st.markdown("""
     ## Testes e Gráficos
-    Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW Dinâmico.
+    Nesta seção, apresentamos os dados coletados a partir dos testes automáticos do algoritmo de compressão LZW Dinâmico, usando as mesmas métricas de avaliação anteriores.
     """)
 
     # Carrega os dados do CSV automaticamente
     csv_file = "lzw_dynamic_analysis.csv"  # Nome do arquivo dinâmico no diretório
     try:
         data = load_data(csv_file)
-        
+
+        st.markdown("""As estatísticas para os testes foram salvas em um arquivo CSV. A estrutura do arquivo pode ser vista abaixo""")
         # Exibe o DataFrame
         st.write("### Dados do CSV")
         st.write(data)
-        
-        # Gráfico 1: Tamanho Original x Taxa de Compressão
-        st.write("### Tamanho Original vs. Taxa de Compressão")
-        fig, ax = plt.subplots()
-        ax.plot(data["Input Size"], label="Tamanho Original", marker="o", linestyle="--")
-        ax.plot(data["Compression Rate"], label="Taxa de Compressão", marker="x")
-        ax.set_xlabel("Casos")
-        ax.set_ylabel("Tamanho / Taxa")
-        ax.set_title("Comparação de Tamanho e Taxa de Compressão")
-        ax.legend()
-        st.pyplot(fig)
-        
-        # Gráfico 2: Tempo de Compressão
-        st.write("### Tempo de Compressão por Caso")
-        fig, ax = plt.subplots()
-        ax.plot(data["Compression Time (s)"], label="Tempo de Compressão (s)", color="green", marker="o")
-        ax.set_xlabel("Casos")
-        ax.set_ylabel("Tempo (s)")
-        ax.set_title("Tempo de Compressão por Caso")
-        st.pyplot(fig)
-        
-        # Gráfico 3: Entropia
+
+        # Gráfico 1: Entropia por Nível de Entrada
         st.write("### Entropia por Nível de Entrada")
         fig, ax = plt.subplots()
         ax.scatter(data["Entropy Level"], data["Entropy"], label="Entropia", color="blue")
@@ -202,10 +201,8 @@ def show_dynamic_report():
         ax.set_title("Entropia por Nível de Entrada")
         st.pyplot(fig)
 
-        # Calcular a eficiência da compressão em porcentagens
+        # Gráfico 2: Relação entre Entropia e Eficiência de Compressão (%)
         data["Compression Efficiency (%)"] = (1 - data["Compression Rate"]) * 100
-
-        # Gráfico: Entropia x Eficiência de Compressão (%)
         st.write("### Relação entre Entropia e Eficiência de Compressão (%)")
         fig, ax = plt.subplots()
         ax.scatter(data["Entropy"], data["Compression Efficiency (%)"], c='blue', alpha=0.7, edgecolors='w', s=80)
@@ -215,14 +212,40 @@ def show_dynamic_report():
         ax.grid(True)
         st.pyplot(fig)
 
-        # Gráfico Interativo (Streamlit Native)
+        # Gráfico 3: Tamanho do Dicionário pela Entropia
+        st.write("### Tamanho do Dicionário pela Entropia")
+        fig, ax = plt.subplots()
+        ax.plot(data["Entropy"], data["Dictionary Size"], label="Tamanho do Dicionário", marker="o", linestyle="-")
+        ax.set_xlabel("Entropia")
+        ax.set_ylabel("Tamanho do Dicionário")
+        ax.set_title("Tamanho do Dicionário em Função da Entropia")
+        ax.legend()
+        st.pyplot(fig)
+
+        # Gráfico 4: Taxa de Compressão por Tamanho para cada Nível de Entropia
+        st.write("### Taxa de Compressão por Tamanho para cada Nível de Entropia")
+        entropy_levels = data["Entropy Level"].unique()
+        selected_level = st.selectbox("Selecione o Nível de Entropia", entropy_levels)
+        filtered_data = data[data["Entropy Level"] == selected_level]
+
+        if not filtered_data.empty:
+            fig, ax = plt.subplots()
+            ax.plot(filtered_data["Input Size"], filtered_data["Compression Rate"], marker="x", linestyle="--")
+            ax.set_xlabel("Tamanho da Entrada")
+            ax.set_ylabel("Taxa de Compressão")
+            ax.set_title(f"Taxa de Compressão por Tamanho para Nível de Entropia {selected_level}")
+            st.pyplot(fig)
+        else:
+            st.warning("Nenhum dado disponível para o nível de entropia selecionado.")
+
+        # Gráfico Interativo
         st.write("### Gráfico Interativo: Input Size vs. Compression Rate")
         st.line_chart(data[["Input Size", "Compression Rate"]])
-        
+
         # Estatísticas Descritivas
         st.write("### Estatísticas Descritivas dos Dados")
         st.write(data.describe())
-        
+
     except FileNotFoundError:
         st.error(f"O arquivo '{csv_file}' não foi encontrado no diretório do aplicativo.")
 
@@ -340,7 +363,7 @@ def show_interactive_page():
 def show_conclusions():
     st.title("Conclusões")
     st.markdown("""
-    **Preencha esta seção com suas conclusões e análises finais.**
+    A classe de algoritmos LZW, os quais usam a trie como estrutura principal, é extremamente eficiente na compressão de arquivos cujo nível de caoticidade é controlado. Para arquivos completamente aleatórios, esse método não é indicado, uma vez que a busca por padrões é um eixo central de seu funcionamento. Consideramos a confecção desse TP muito proveitosa, já que foram aplicados na prática conceitos vistos em sala e pudemos observar algumas implicações da teoria estudada. Além disso, a criação deste aplicativo serviu para exercitar a visualização de dados e constatar o funcionamento do algoritmo em tempo real com facilidade. Em suma, o trabalho foi proveitoso e o objetivo foi cumprido.
     """)
 
 # Configuração do menu lateral para navegação
