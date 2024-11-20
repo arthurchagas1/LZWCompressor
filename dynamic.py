@@ -1,38 +1,43 @@
 class LZWCompressorDynamic:
+    # classe para compressao lzw com tamanho de codigo dinamico
     def __init__(self, max_bits=12):
-        self.max_bits = max_bits
-        self.current_bits = 9  # Tamanho inicial do código
-        self.max_code = (1 << self.current_bits) - 1
-        self.trie = {}
-        for i in range(256):  # Inicializa a tabela com códigos ASCII
+        # inicializa o compressor com um tamanho maximo de codigo
+        self.max_bits = max_bits  # numero maximo de bits permitido
+        self.current_bits = 9  # tamanho inicial do codigo
+        self.max_code = (1 << self.current_bits) - 1  # maior codigo permitido com os bits atuais
+        self.trie = {}  # dicionario para armazenar padroes de sequencia
+        for i in range(256):  # preenche a tabela com os codigos ascii
             self.trie[chr(i)] = i
-        self.next_code = 256  # Primeiro código disponível após ASCII
+        self.next_code = 256  # primeiro codigo disponivel apos os codigos ascii
 
     def compress(self, input_data):
-        result = []
-        current_string = ""
+        # realiza a compressao dos dados de entrada
+        result = []  # lista de codigos comprimidos
+        current_string = ""  # sequencia atual sendo processada
         
         for char in input_data:
             combined_string = current_string + char
             if combined_string in self.trie:
+                # continua expandindo a sequencia se ja existe no dicionario
                 current_string = combined_string
             else:
-                # Salva o código do padrão atual
+                # adiciona o codigo da sequencia atual a saida
                 result.append(self.trie[current_string])
 
-                # Insere o novo padrão no dicionário
+                # insere o novo padrao no dicionario, se o limite ainda nao foi atingido
                 if self.next_code <= self.max_code:
                     self.trie[combined_string] = self.next_code
                     self.next_code += 1
 
-                # Atualiza o número de bits se necessário
+                # ajusta o numero de bits por codigo caso seja necessario
                 if self.next_code > self.max_code and self.current_bits < self.max_bits:
                     self.current_bits += 1
                     self.max_code = (1 << self.current_bits) - 1
 
+                # reinicia a sequencia atual com o caractere atual
                 current_string = char
 
-        # Salva o último padrão
+        # adiciona o codigo da ultima sequencia, se existir
         if current_string:
             result.append(self.trie[current_string])
 
@@ -40,34 +45,40 @@ class LZWCompressorDynamic:
 
 
 class LZWDecompressorDynamic:
+    # classe para descompressao lzw com tamanho de codigo dinamico
     def __init__(self, max_bits=12):
-        self.max_bits = max_bits
-        self.current_bits = 9  # Tamanho inicial do código
-        self.max_code = (1 << self.current_bits) - 1
-        self.dictionary = {i: chr(i) for i in range(256)}  # Inicializa a tabela com códigos ASCII
-        self.next_code = 256
+        # inicializa o descompressor com um tamanho maximo de codigo
+        self.max_bits = max_bits  # numero maximo de bits permitido
+        self.current_bits = 9  # tamanho inicial do codigo
+        self.max_code = (1 << self.current_bits) - 1  # maior codigo permitido com os bits atuais
+        self.dictionary = {i: chr(i) for i in range(256)}  # inicializa a tabela com codigos ascii
+        self.next_code = 256  # proximo codigo disponivel
 
     def decompress(self, compressed_data):
-        result = []
+        # realiza a descompressao dos dados comprimidos
+        result = []  # lista de dados descomprimidos
         current_string = self.dictionary[compressed_data[0]]
         result.append(current_string)
 
         for code in compressed_data[1:]:
             if code in self.dictionary:
+                # recupera a entrada do dicionario
                 entry = self.dictionary[code]
             elif code == self.next_code:
+                # gera nova entrada se o codigo for igual ao proximo codigo disponivel
                 entry = current_string + current_string[0]
             else:
-                raise ValueError("Código inválido durante a descompressão.")
+                # lanca erro se o codigo nao for valido
+                raise ValueError("codigo invalido durante a descompressao")
 
             result.append(entry)
 
-            # Adiciona a nova entrada no dicionário
+            # adiciona a nova entrada no dicionario
             if self.next_code <= self.max_code:
                 self.dictionary[self.next_code] = current_string + entry[0]
                 self.next_code += 1
 
-            # Atualiza o número de bits se necessário
+            # ajusta o numero de bits por codigo caso seja necessario
             if self.next_code > self.max_code and self.current_bits < self.max_bits:
                 self.current_bits += 1
                 self.max_code = (1 << self.current_bits) - 1
@@ -77,64 +88,67 @@ class LZWDecompressorDynamic:
         return ''.join(result)
 
 
-# Funções auxiliares para salvar e carregar arquivos comprimidos
+# funcoes auxiliares para salvar e carregar arquivos comprimidos
 def write_compressed_file(output_path, compressed_data, max_bits):
+    # escreve os dados comprimidos em um arquivo binario
     with open(output_path, 'wb') as f:
-        f.write(max_bits.to_bytes(1, byteorder='big'))  # Salva o número máximo de bits usado
+        f.write(max_bits.to_bytes(1, byteorder='big'))  # salva o numero maximo de bits usado
         for code in compressed_data:
             f.write(code.to_bytes((max_bits + 7) // 8, byteorder='big'))
 
 
 def read_compressed_file(input_path):
+    # le os dados comprimidos de um arquivo binario
     with open(input_path, 'rb') as f:
-        max_bits = int.from_bytes(f.read(1), byteorder='big')  # Lê o número máximo de bits usado
-        code_size = (max_bits + 7) // 8
+        max_bits = int.from_bytes(f.read(1), byteorder='big')  # le o numero maximo de bits usado
+        code_size = (max_bits + 7) // 8  # calcula o tamanho de cada codigo
         compressed_data = []
         while chunk := f.read(code_size):
             compressed_data.append(int.from_bytes(chunk, byteorder='big'))
     return compressed_data, max_bits
 
 
-# Exemplo de uso
+# exemplo de uso
 if __name__ == "__main__":
     import argparse
     import os
 
-    parser = argparse.ArgumentParser(description="LZW Compression/Decompression Tool with Dynamic Code Size")
-    parser.add_argument("operation", choices=["compress", "decompress"], help="Operation to perform")
-    parser.add_argument("input_file", type=str, help="Path to input file")
-    parser.add_argument("output_file", type=str, help="Path to output file")
-    parser.add_argument("--max_bits", type=int, default=12, help="Maximum number of bits (default: 12)")
+    # define os argumentos da linha de comando
+    parser = argparse.ArgumentParser(description="lzw compression/decompression tool with dynamic code size")
+    parser.add_argument("operation", choices=["compress", "decompress"], help="operation to perform")
+    parser.add_argument("input_file", type=str, help="path to input file")
+    parser.add_argument("output_file", type=str, help="path to output file")
+    parser.add_argument("--max_bits", type=int, default=12, help="maximum number of bits (default: 12)")
 
     args = parser.parse_args()
 
     if not os.path.isfile(args.input_file):
-        print(f"Error: File '{args.input_file}' does not exist.")
+        # verifica se o arquivo de entrada existe
+        print(f"error: file '{args.input_file}' does not exist")
         exit(1)
 
     if args.operation == "compress":
-        # Leitura do arquivo de entrada
+        # leitura do arquivo de entrada
         with open(args.input_file, 'r', encoding='latin1') as f:
             input_data = f.read()
 
-        # Compressão
+        # realiza a compressao
         compressor = LZWCompressorDynamic(max_bits=args.max_bits)
         compressed_data, final_bits = compressor.compress(input_data)
 
-        # Salva o arquivo comprimido
+        # salva o arquivo comprimido
         write_compressed_file(args.output_file, compressed_data, final_bits)
-        print(f"Arquivo comprimido salvo em: {args.output_file}")
+        print(f"arquivo comprimido salvo em: {args.output_file}")
 
     elif args.operation == "decompress":
-        # Leitura do arquivo comprimido
+        # leitura do arquivo comprimido
         compressed_data, max_bits = read_compressed_file(args.input_file)
 
-        # Descompressão
+        # realiza a descompressao
         decompressor = LZWDecompressorDynamic(max_bits=max_bits)
         decompressed_data = decompressor.decompress(compressed_data)
 
-        # Salva o arquivo descomprimido
+        # salva o arquivo descomprimido
         with open(args.output_file, 'w', encoding='latin1') as f:
             f.write(decompressed_data)
-        print(f"Arquivo descomprimido salvo em: {args.output_file}")
-
+        print(f"arquivo descomprimido salvo em: {args.output_file}")
