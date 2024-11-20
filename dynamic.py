@@ -108,7 +108,7 @@ def read_compressed_file(input_path):
     return compressed_data, max_bits
 
 
-# exemplo de uso
+# main
 if __name__ == "__main__":
     import argparse
     import os
