@@ -349,7 +349,7 @@ page = st.sidebar.radio("Escolha uma página", ("Introdução", "Implementaçõe
 if page == "Introdução":
     show_introduction()
 elif page == "Implementações":
-    show_implementations():
+    show_implementations()
 elif page == "Relatório LZW Padrão":
     show_report()
 elif page == "Relatório LZW Dinâmico":
