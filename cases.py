@@ -4,16 +4,16 @@ import math
 import csv
 import time
 import random
-from lzw import LZWCompressor  # Importe do módulo lzw.py
+from lzw import LZWCompressor 
 
-# Função para calcular a entropia de Shannon
+# funcao para calcular a entropia de shannon
 def calculate_shannon_entropy(string):
     frequency = Counter(string)
     probabilities = [freq / len(string) for freq in frequency.values()]
     entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
     return entropy
 
-# Geradores de strings com diferentes níveis de entropia
+# geradores de strings com diferentes niveis de entropia
 def generate_entropy_level_1(length):
     string1 = 'A' * int(length / 2) + 'B' + 'A' * int((length / 2) - 1)
     return string1
@@ -57,7 +57,7 @@ def generate_entropy_level_9(length):
     ascii_chars = [chr(i) for i in range(32, 126)]
     return ''.join(np.random.choice(ascii_chars) for _ in range(length))
 
-# Lista de geradores de strings
+# lista de geradores de strings
 generators = [
     generate_entropy_level_1,
     generate_entropy_level_2,
@@ -70,46 +70,46 @@ generators = [
     generate_entropy_level_9,
 ]
 
-# Configuração para salvar resultados no CSV
+# configuracao para salvar resultados no CSV
 output_file = "lzw_analysis.csv"
 fields = ["Iteration", "Entropy Level", "Input Size", "Entropy", "Compression Time (s)", "Compression Rate"]
 
-# Inicializa o arquivo CSV
+# inicializa o arquivo CSV
 with open(output_file, mode="w", newline="") as file:
     writer = csv.writer(file)
     writer.writerow(fields)
 
-# Loop de geração de casos e análise
+# loop de geracao de casos e analise
 iteration = 1
 try:
     while True:
-        # Seleção do nível de entropia e tamanho da string
+        # selecao do nivel de entropia e tamanho da string
         level = random.randint(1, len(generators))
-        length = random.randint(100, 1000000)  # Comprimento aleatório entre 100 e 10.000
+        length = random.randint(100, 1000000)  # comprimento aleatorio entre 100 e 1.000.000
         generator = generators[level - 1]
         
-        # Gera a string e calcula a entropia
+        # gera a string e calcula a entropia
         input_string = generator(length)
         entropy = calculate_shannon_entropy(input_string)
 
-        # Compressão com LZW
+        # compressão com LZW
         compressor = LZWCompressor()
         start_time = time.time()
         compressed_data = compressor.compress(input_string)
         end_time = time.time()
         compression_time = end_time - start_time
 
-        # Calcula a taxa de compressão
-        original_size = len(input_string) * 8  # Tamanho original em bits
-        compressed_size = len(compressed_data) * 12  # Tamanho comprimido (12 bits por código)
+        # calcula a taxa de compressão
+        original_size = len(input_string) * 8  # tamanho original em bits
+        compressed_size = len(compressed_data) * 12  # tamanho comprimido (12 bits por codigo)
         compression_rate = compressed_size / original_size
 
-        # Salva os resultados no CSV
+        # salva os resultados no CSV
         with open(output_file, mode="a", newline="") as file:
             writer = csv.writer(file)
             writer.writerow([iteration, level, length, entropy, compression_time, compression_rate])
 
-        # Exibe no terminal
+        # exibe no terminal
         print(f"Iteração {iteration}: Nível {level}, Tamanho {length}, Entropia {entropy:.4f}, "
               f"Tempo {compression_time:.4f}s, Taxa {compression_rate:.4f}")
         iteration += 1
