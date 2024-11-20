@@ -6,6 +6,9 @@
 
 # English
 
+# Documentation
+Documentation Link
+
 ## Description
 
 This project implements the LZW compression algorithm with support for dynamic code size and a case generator for analyzing performance, entropy, and compression efficiency.
@@ -41,6 +44,9 @@ The test results will be saved in a CSV file in the program's directory.
 
 # Português
 
+## Relatório
+(link para o relatório)
+
 ## Descrição
 
 Este projeto implementa o algoritmo de compressão LZW com suporte para tamanho de código dinâmico e um gerador de casos para análise de desempenho, entropia e eficiência da compressão.
@@ -54,7 +60,7 @@ O projeto consiste em:
 
 ## Uso Remoto (site)
 
-• Acesse [Este Link](inserir link)
+• Acesse [Este Link](inserir link) e vá na seção "Teste Interativo".
 
 ## Instalação Local
 
