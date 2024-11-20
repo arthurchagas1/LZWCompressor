@@ -31,21 +31,18 @@ def calculate_entropy(text):
 # Página Introdução
 def show_introduction():
     st.title("Trabalho Prático 1 de Algoritmos II - LZW")
-    st.markdown(
+    st.markdown("""
     ### Arthur Rodrigues Chagas - 2022069417
     ### Lucas Dayrell de Andrade Machado - 2020035329
 
     #Introdução
-    
-
-    
-        
-    )
+    O Trabalho Prático 1 de Algoritmos II visa colocar em prática os conhecimentos trabalhados em sala, especialmente se referindo a uma aplicação da árovre Trie. A tarefa a ser realizada é a compressão e descompressão de arquivos utilizando o algoritmo Lempel-Ziv-Welch (LZW), que utiliza essa estrutura. Nas seções ao lado, discutiremos as implementações e alguns experimentos realizados, a fim de analisar a utilidade e aplicabilidade do algoritmo em questão.      
+    """)
 
 # Página Implementações
 def show_implementations():
     st.title("Implementações")
-    st.markdown(
+    st.markdown("""
     ##Trie
         Para representar a árvore trie, foram criadas duas classes: uma correspondente ao nó e a outra à estrutura da árvore.
         ###Classe TrieNode
@@ -87,7 +84,7 @@ def show_implementations():
         São análogas às anteriores. `write_compressed_file(output_path, compressed_data, max_bits)` Grava os dados comprimidos em um arquivo binário, salvando também o número de bits usado para os códigos. `read_compressed_file(input_path)` faz o mesmo do anterior, levando em conta o número de bits utilizados.
     ##Considerações
         Podemos afirmar que a implementação dinâmica tem a vantagem de ajustar automaticamente o número de bits conforme necessário (até um máximo), enquanto a implementação estática usa um número fixo de bits para representar os códigos. Isso torna o algoritmo dinâmico mais flexível, especialmente lidando com dados de tamanho variado. Cabe frisar, no entanto, que essa implementação pode ser mais lenta dependendo do caso pela presença do custo de atualizar o número de bits e verificar a necessidade de ajustar.
-    )
+    """)
 
 # Página Relatório - Testes e Gráficos (LZW Padrão)
 def show_report():
