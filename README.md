@@ -44,7 +44,7 @@ O arquivo com os testes será um CSV e estará no diretório do programa
 # English
 
 # Documentation
-Documentation Link
+[https://lzwanalysis.streamlit.app/](https://lzwanalysis.streamlit.app/)
 
 ## Description
 
@@ -59,7 +59,7 @@ The project consists of:
 
 ## Remote Usage (Website)
 
-• Access [This Link](insert link)
+• Access [This Link](https://lzwanalysis.streamlit.app/)
 
 ## Local Installation
 
