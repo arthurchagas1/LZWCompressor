@@ -7,7 +7,7 @@
 # Português
 
 ## Relatório
-(link para o relatório)
+[https://lzwanalysis.streamlit.app/](https://lzwanalysis.streamlit.app/)
 
 ## Descrição
 
@@ -22,7 +22,7 @@ O projeto consiste em:
 
 ## Uso Remoto (site)
 
-• Acesse [Este Link](inserir link) e vá na seção "Teste Interativo".
+• Acesse [Este Link](https://lzwanalysis.streamlit.app/) e vá na seção "Teste Interativo".
 
 ## Instalação Local
 
